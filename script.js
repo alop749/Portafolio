@@ -258,7 +258,7 @@ langDropdown.querySelectorAll('button').forEach(btn => {
 function setLanguage(lang) {
     currentLanguage = lang;
     currentLangText.textContent = lang.toUpperCase();
-    
+
     document.querySelectorAll('[data-key]').forEach(element => {
         const key = element.getAttribute('data-key');
         if (translations[lang][key]) {
@@ -312,22 +312,40 @@ navLinks.querySelectorAll('a').forEach(link => {
     });
 });
 
-// 6. Contact Form Handling (Simple demonstration)
-contactForm.addEventListener('submit', (e) => {
+// 6. Contact Form Handling (AJAX Submission)
+contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const data = new FormData(contactForm);
     const submitBtn = contactForm.querySelector('button');
     const originalText = submitBtn.textContent;
-    
+
     submitBtn.textContent = currentLanguage === 'es' ? "Enviando..." : "Sending...";
     submitBtn.disabled = true;
 
-    // Simulate API call
-    setTimeout(() => {
-        alert(currentLanguage === 'es' ? "¡Mensaje enviado con éxito!" : "Message sent successfully!");
-        contactForm.reset();
+    try {
+        const response = await fetch(contactForm.action, {
+            method: contactForm.method,
+            body: data,
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            alert(currentLanguage === 'es' ? "¡Mensaje enviado con éxito!" : "Message sent successfully!");
+            contactForm.reset();
+        } else {
+            const errorData = await response.json();
+            alert(currentLanguage === 'es' ? "Hubo un problema al enviar el mensaje. Inténtalo de nuevo." : "There was a problem sending your message. Please try again.");
+            console.error(errorData);
+        }
+    } catch (error) {
+        alert(currentLanguage === 'es' ? "Error de conexión. Por favor verifica tu internet." : "Connection error. Please check your internet.");
+        console.error(error);
+    } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-    }, 1500);
+    }
 });
 
 // 7. Active Navigation Highlighting
